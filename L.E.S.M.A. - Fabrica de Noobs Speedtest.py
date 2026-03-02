@@ -1,5 +1,5 @@
-#Programado por: Natanael Antonioli - Fábrica de Noobs
-#Baseado no código de Matt Martz
+#	Programado por: Natanael Antonioli - Fábrica de Noobs
+#	Baseado no código de Matt Martz
 
 #    Licensed under the Apache License, Version 2.0 (the "License"); you may
 #    not use this file except in compliance with the License. You may obtain
@@ -12,8 +12,6 @@
 #    WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied. See the
 #    License for the specific language governing permissions and limitations
 #    under the License.
-
-#Morte ao miojo!
 
 import time
 from time import gmtime, strftime
@@ -34,7 +32,6 @@ import datetime
 import platform
 import threading
 import xml.parsers.expat
-
 
 try:
 	import gzip
