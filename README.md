@@ -74,3 +74,26 @@ Traceback (most recent call last):
     except (ConfigRetrievalError, HTTP_ERRORS):
 TypeError: catching classes that do not inherit from BaseException is not allowed
 ```
+
+As it was not bad enough, if you are using VS Code, it is possible you to get this problems:
+
+```python
+  Import "simplejson" could not be resolved from source
+  Import "urllib2" could not be resolved
+  Import "httplib" could not be resolved
+  Import "httplib" could not be resolved
+  Import "Queue" could not be resolved
+  Import "urlparse" could not be resolved
+  Import "urlparse" could not be resolved
+  Import "md5" could not be resolved
+  Import "cStringIO" could not be resolved
+  Import "StringIO" could not be resolved
+  "basestring" is not defined
+  "file" is not defined
+  "unicode" is not defined
+  "unicode" is not defined
+  "unicode" is not defined
+  "unicode" is not defined
+  "unicode" is not defined
+  "unicode" is not defined
+```

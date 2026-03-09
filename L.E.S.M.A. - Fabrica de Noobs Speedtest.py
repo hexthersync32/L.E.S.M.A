@@ -18,7 +18,6 @@ from time import gmtime, strftime
 
 import datetime
 
-
 import os
 import re
 import csv
@@ -52,7 +51,6 @@ class FakeShutdownEvent(object):
 	def isSet():
 		"Dummy method to always return false"""
 		return False
-
 
 # Some global variables we use
 USER_AGENT = None
@@ -860,8 +858,13 @@ class Speedtest(object):
 						root = ET.fromstring(''.encode().join(serversxml))
 						elements = root.getiterator('server')
 					except AttributeError:
-						root = DOM.parseString(''.join(serversxml))
-						elements = root.getElementsByTagName('server')
+						try:
+							root = DOM.parseString(''.join(serversxml))
+							elements = root.getElementsByTagName('server')
+						except NameError:
+							print('Line 865 -> name DOM is not defined')	
+					except AttributeError:
+						print('Line 867 -> Error')
 				except (SyntaxError, xml.parsers.expat.ExpatError):
 					raise ServersRetrievalError
 
