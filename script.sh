@@ -4,8 +4,8 @@ ENV_NAME="venv"
 
 if [ -d "$ENV_NAME" ]; then
     echo "The virtual environment '$ENV_NAME' already exists. Deleting..."
-    read -p "You about to delete all the files. Continue? [Y/N]" option
-    if [ $option -eq "Y" ]; then
+    read -p "You about to delete all the files. Continue? [Y/N] " option
+    if [[ $option -eq "Y" || $option -eq "y" ]]; then
    	rm -rfv "$ENV_NAME"
 	echo "Virtual environment successfully removed!"
     else
