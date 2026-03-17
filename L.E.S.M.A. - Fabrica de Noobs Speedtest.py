@@ -1,5 +1,5 @@
-#	Programado por: Natanael Antonioli - Fábrica de Noobs
-#	Baseado no código de Matt Martz
+#Programado por: Natanael Antonioli - Fábrica de Noobs
+#Baseado no código de Matt Martz
 
 #    Licensed under the Apache License, Version 2.0 (the "License"); you may
 #    not use this file except in compliance with the License. You may obtain
@@ -31,6 +31,7 @@ import datetime
 import platform
 import threading
 import xml.parsers.expat
+from xml.dom import minidom as DOM
 
 try:
 	import gzip
@@ -43,14 +44,15 @@ __version__ = '1.0.2'
 
 
 class FakeShutdownEvent(object):
-	"""Class to fake a threading.Event.isSet so that users of this module
+	"""Class to fake a threading.Event.is_set so that users of this module
 	are not required to register their own threading.Event()
 	"""
 
 	@staticmethod
-	def isSet():
+	def is_set():
 		"Dummy method to always return false"""
 		return False
+
 
 # Some global variables we use
 USER_AGENT = None
@@ -81,11 +83,13 @@ except ImportError:
 		ET = None
 
 try:
+	# In Python 3, urllib2' functionality was merget into the urllib module
 	from urllib2 import urlopen, Request, HTTPError, URLError
 except ImportError:
 	from urllib.request import urlopen, Request, HTTPError, URLError
 
 try:
+	# from httplib import HTTPConnection
 	from httplib import HTTPConnection
 except ImportError:
 	from http.client import HTTPConnection
@@ -217,15 +221,13 @@ try:
 	except AttributeError:
 		CERT_ERROR = tuple()
 
-	HTTP_ERRORS = ((HTTPError, URLError, socket.error, ssl.SSLError) +
+	HTTP_ERRORS = ((HTTPError, URLError, OSError, ssl.SSLError) +
 				   CERT_ERROR)
 except ImportError:
-	HTTP_ERRORS = (HTTPError, URLError, socket.error)
-
+	HTTP_ERRORS = (HTTPError, URLError, OSError)
 
 class SpeedtestException(Exception):
 	"""Base exception for this module"""
-
 
 class SpeedtestCLIError(SpeedtestException):
 	"""Generic exception for raising errors during CLI operation"""
@@ -454,7 +456,7 @@ def print_dots(current, total, start=False, end=False):
 	status
 	"""
 
-	if SHUTDOWN_EVENT.isSet():
+	if SHUTDOWN_EVENT.is_set():
 		return
 
 	sys.stdout.write('.')
@@ -482,7 +484,7 @@ class HTTPDownloader(threading.Thread):
 		try:
 			if (timeit.default_timer() - self.starttime) <= self.timeout:
 				f = urlopen(self.request)
-				while (not SHUTDOWN_EVENT.isSet() and
+				while (not SHUTDOWN_EVENT.is_set() and
 						(timeit.default_timer() - self.starttime) <=
 						self.timeout):
 					self.result.append(len(f.read(10240)))
@@ -525,7 +527,7 @@ class HTTPUploaderData(object):
 
 	def read(self, n=10240):
 		if ((timeit.default_timer() - self.start) <= self.timeout and
-				not SHUTDOWN_EVENT.isSet()):
+				not SHUTDOWN_EVENT.is_set()):
 			chunk = self.data.read(n)
 			self.total.append(len(chunk))
 			return chunk
@@ -552,7 +554,7 @@ class HTTPUploader(threading.Thread):
 		request = self.request
 		try:
 			if ((timeit.default_timer() - self.starttime) <= self.timeout and
-					not SHUTDOWN_EVENT.isSet()):
+					not SHUTDOWN_EVENT.is_set()):
 				try:
 					f = urlopen(request)
 				except TypeError:
@@ -593,7 +595,7 @@ class SpeedtestResults(object):
 		else:
 			self.server = server
 		self._share = None
-		self.timestamp = datetime.datetime.utcnow().isoformat()
+		self.timestamp = datetime.datetime.now(datetime.UTC)
 		self.bytes_received = 0
 		self.bytes_sent = 0
 
@@ -856,15 +858,10 @@ class Speedtest(object):
 				try:
 					try:
 						root = ET.fromstring(''.encode().join(serversxml))
-						elements = root.getiterator('server')
+						elements = root.iter('server')
 					except AttributeError:
-						try:
-							root = DOM.parseString(''.join(serversxml))
-							elements = root.getElementsByTagName('server')
-						except NameError:
-							print('Line 865 -> name DOM is not defined')	
-					except AttributeError:
-						print('Line 867 -> Error')
+						root = DOM.parseString(''.join(serversxml))
+						elements = root.getElementsByTagName('server')
 				except (SyntaxError, xml.parsers.expat.ExpatError):
 					raise ServersRetrievalError
 
@@ -1063,7 +1060,7 @@ class Speedtest(object):
 		def consumer(q, request_count):
 			while len(finished) < request_count:
 				thread = q.get(True)
-				while thread.isAlive():
+				while thread.is_alive():
 					thread.join(timeout=0.1)
 				finished.append(sum(thread.result))
 				callback(thread.i, request_count, end=True)
@@ -1076,9 +1073,9 @@ class Speedtest(object):
 		start = timeit.default_timer()
 		prod_thread.start()
 		cons_thread.start()
-		while prod_thread.isAlive():
+		while prod_thread.is_alive():
 			prod_thread.join(timeout=0.1)
-		while cons_thread.isAlive():
+		while cons_thread.is_alive():
 			cons_thread.join(timeout=0.1)
 
 		stop = timeit.default_timer()
@@ -1130,7 +1127,7 @@ class Speedtest(object):
 		def consumer(q, request_count):
 			while len(finished) < request_count:
 				thread = q.get(True)
-				while thread.isAlive():
+				while thread.is_alive():
 					thread.join(timeout=0.1)
 				finished.append(thread.result)
 				callback(thread.i, request_count, end=True)
@@ -1143,9 +1140,9 @@ class Speedtest(object):
 		start = timeit.default_timer()
 		prod_thread.start()
 		cons_thread.start()
-		while prod_thread.isAlive():
+		while prod_thread.is_alive():
 			prod_thread.join(timeout=0.1)
-		while cons_thread.isAlive():
+		while cons_thread.is_alive():
 			cons_thread.join(timeout=0.1)
 
 		stop = timeit.default_timer()
@@ -1371,7 +1368,7 @@ def shell():
 			speedtest.get_servers(servers)
 		except NoMatchedServers:
 			raise SpeedtestCLIError('No matched servers: %s' % args.server)
-		except (ServersRetrievalError, HTTP_ERRORS):
+		except (ServersRetrievalError,) + HTTP_ERRORS:
 			print_('Cannot retrieve speedtest server list')
 			raise SpeedtestCLIError(get_exception())
 		except InvalidServerIDType:
